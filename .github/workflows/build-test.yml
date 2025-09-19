@@ -131,7 +131,7 @@ jobs:
       run: go build -o bin/grpc-server ./cmd/grpc
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: binaries
         path: bin/
@@ -185,7 +185,7 @@ jobs:
         go build -ldflags="-w -s" -o dist/goclean-grpc-${{ matrix.goos }}-${{ matrix.goarch }}$( [ "$GOOS" = "windows" ] && echo ".exe" || echo "" ) ./cmd/grpc
 
     - name: Upload cross-platform artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: goclean-${{ matrix.goos }}-${{ matrix.goarch }}
         path: dist/
