@@ -123,7 +123,7 @@
   "clientScopeMappings": {},
   "defaultRoles": ["user"],
   "requiredCredentials": ["password"],
-  "passwordPolicy": "length(8)",
+  "passwordPolicy": "",
   "otpPolicyType": "totp",
   "otpPolicyAlgorithm": "HmacSHA1",
   "otpPolicyInitialCounter": 0,

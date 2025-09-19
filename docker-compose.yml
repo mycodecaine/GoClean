@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./deployments/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -26,7 +26,7 @@ services:
     image: redis:7-alpine
     container_name: goclean-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
       - ./deployments/redis.conf:/etc/redis/redis.conf
@@ -54,7 +54,7 @@ services:
       KC_HTTP_ENABLED: true
       KC_HEALTH_ENABLED: true
     ports:
-      - "8081:8080"
+      - "8082:8080"
     volumes:
       - ./deployments/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
     networks:
@@ -82,11 +82,11 @@ services:
   #   container_name: goclean-api
   #   environment:
   #     DB_HOST: postgres
-  #     DB_PORT: 5432
+  #     DB_PORT: 5433
   #     DB_USER: postgres
   #     DB_PASSWORD: postgres
   #     DB_NAME: goclean
-  #     REDIS_ADDR: redis:6379
+  #     REDIS_ADDR: redis:6380
   #     KEYCLOAK_BASE_URL: http://keycloak:8080
   #     KEYCLOAK_REALM: goclean
   #     KEYCLOAK_CLIENT_ID: goclean-api

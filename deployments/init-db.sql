@@ -1,5 +1,6 @@
 -- Create database for Keycloak if it doesn't exist
-CREATE DATABASE IF NOT EXISTS keycloak;
+SELECT 'CREATE DATABASE keycloak'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'keycloak')\gexec
 
 -- Create additional extensions if needed
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
