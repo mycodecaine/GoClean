@@ -1,0 +1,64 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test files
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Build artifacts
+dist/
+
+# Dependency directories
+vendor/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+docs/
+
+# CI/CD
+.github/
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Temporary files
+tmp/
+temp/

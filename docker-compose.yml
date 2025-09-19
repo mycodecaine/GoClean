@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: goclean-postgres
+    environment:
+      POSTGRES_DB: goclean
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployments/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - goclean-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: goclean-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./deployments/redis.conf:/etc/redis/redis.conf
+    networks:
+      - goclean-network
+    restart: unless-stopped
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    container_name: goclean-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./deployments/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    networks:
+      - goclean-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: 
+      - start-dev 
+      - --import-realm
+      - --http-port=8080
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: 127.0.0.1:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Uncomment to run the application
+  # goclean-api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: goclean-api
+  #   environment:
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_USER: postgres
+  #     DB_PASSWORD: postgres
+  #     DB_NAME: goclean
+  #     REDIS_ADDR: redis:6379
+  #     KEYCLOAK_BASE_URL: http://keycloak:8080
+  #     KEYCLOAK_REALM: goclean
+  #     KEYCLOAK_CLIENT_ID: goclean-api
+  #     KEYCLOAK_CLIENT_SECRET: your-client-secret
+  #     HTTP_PORT: 8080
+  #     GRPC_PORT: 9090
+  #     APP_ENV: development
+  #     LOG_LEVEL: info
+  #   ports:
+  #     - "8080:8080"
+  #     - "9090:9090"
+  #   networks:
+  #     - goclean-network
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     keycloak:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  goclean-network:
+    driver: bridge

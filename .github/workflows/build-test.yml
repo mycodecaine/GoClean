@@ -1,0 +1,214 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  GO_VERSION: '1.21'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: goclean_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Check code formatting
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not formatted properly:"
+          gofmt -s -l .
+          exit 1
+        fi
+
+    - name: Set test environment variables
+      run: |
+        echo "DB_HOST=localhost" >> $GITHUB_ENV
+        echo "DB_PORT=5432" >> $GITHUB_ENV
+        echo "DB_USER=postgres" >> $GITHUB_ENV
+        echo "DB_PASSWORD=postgres" >> $GITHUB_ENV
+        echo "DB_NAME=goclean_test" >> $GITHUB_ENV
+        echo "DB_SSL_MODE=disable" >> $GITHUB_ENV
+        echo "REDIS_ADDR=localhost:6379" >> $GITHUB_ENV
+        echo "REDIS_PASSWORD=" >> $GITHUB_ENV
+        echo "REDIS_DB=1" >> $GITHUB_ENV
+        echo "APP_ENV=test" >> $GITHUB_ENV
+        echo "LOG_LEVEL=error" >> $GITHUB_ENV
+
+    - name: Run tests
+      run: go test ./test -v -race -coverprofile=coverage.out
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.out
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Build HTTP server
+      run: go build -o bin/goclean ./cmd/http
+
+    - name: Build gRPC server
+      run: go build -o bin/grpc-server ./cmd/grpc
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: binaries
+        path: bin/
+
+  build-cross-platform:
+    name: Cross-platform Build
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+        exclude:
+          - goos: windows
+            goarch: arm64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Build binaries
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: |
+        mkdir -p dist
+        
+        # Build HTTP server
+        BINARY_NAME=goclean
+        if [ "$GOOS" = "windows" ]; then
+          BINARY_NAME="${BINARY_NAME}.exe"
+        fi
+        go build -ldflags="-w -s" -o dist/goclean-http-${{ matrix.goos }}-${{ matrix.goarch }}$( [ "$GOOS" = "windows" ] && echo ".exe" || echo "" ) ./cmd/http
+        
+        # Build gRPC server
+        BINARY_NAME=grpc-server
+        if [ "$GOOS" = "windows" ]; then
+          BINARY_NAME="${BINARY_NAME}.exe"
+        fi
+        go build -ldflags="-w -s" -o dist/goclean-grpc-${{ matrix.goos }}-${{ matrix.goarch }}$( [ "$GOOS" = "windows" ] && echo ".exe" || echo "" ) ./cmd/grpc
+
+    - name: Upload cross-platform artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: goclean-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: dist/
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64
+        push: false
+        tags: goclean:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max

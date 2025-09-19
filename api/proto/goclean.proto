@@ -1,0 +1,308 @@
+syntax = "proto3";
+
+package goclean.v1;
+
+option go_package = "goclean/api/proto/v1;v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// User service definition
+service UserService {
+  // Create a new user
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  
+  // Get user by ID
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  
+  // Get current authenticated user
+  rpc GetCurrentUser(google.protobuf.Empty) returns (GetUserResponse);
+  
+  // List users with pagination
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  
+  // Update user
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  
+  // Delete user
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+}
+
+// Product service definition
+service ProductService {
+  // Create a new product
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+  
+  // Get product by ID
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+  
+  // List products with pagination
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  
+  // Search products
+  rpc SearchProducts(SearchProductsRequest) returns (ListProductsResponse);
+  
+  // Update product
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+  
+  // Delete product
+  rpc DeleteProduct(DeleteProductRequest) returns (google.protobuf.Empty);
+}
+
+// Order service definition
+service OrderService {
+  // Create a new order
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  
+  // Get order by ID
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  
+  // Get orders by user ID
+  rpc GetUserOrders(GetUserOrdersRequest) returns (ListOrdersResponse);
+  
+  // List orders with pagination
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  
+  // Update order status
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+  
+  // Cancel order
+  rpc CancelOrder(CancelOrderRequest) returns (google.protobuf.Empty);
+}
+
+// Messages
+
+// User messages
+message User {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  string first_name = 4;
+  string last_name = 5;
+  bool is_active = 6;
+  Profile profile = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message Profile {
+  string id = 1;
+  string user_id = 2;
+  string bio = 3;
+  string avatar = 4;
+  google.protobuf.Timestamp date_of_birth = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string username = 2;
+  string first_name = 3;
+  string last_name = 4;
+  optional CreateProfileRequest profile = 5;
+}
+
+message CreateProfileRequest {
+  string bio = 1;
+  string avatar = 2;
+  string date_of_birth = 3;
+}
+
+message CreateUserResponse {
+  string id = 1;
+  string message = 2;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message ListUsersRequest {
+  int32 offset = 1;
+  int32 limit = 2;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  int32 total = 2;
+  PaginationInfo pagination = 3;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  optional string email = 2;
+  optional string username = 3;
+  optional string first_name = 4;
+  optional string last_name = 5;
+}
+
+message UpdateUserResponse {
+  string message = 1;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+// Product messages
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string sku = 5;
+  string category = 6;
+  bool is_active = 7;
+  string created_by = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  double price = 3;
+  string sku = 4;
+  string category = 5;
+}
+
+message CreateProductResponse {
+  string id = 1;
+  string message = 2;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
+
+message ListProductsRequest {
+  int32 offset = 1;
+  int32 limit = 2;
+  optional string category = 3;
+}
+
+message SearchProductsRequest {
+  string query = 1;
+  int32 offset = 2;
+  int32 limit = 3;
+}
+
+message ListProductsResponse {
+  repeated Product products = 1;
+  int32 total = 2;
+  PaginationInfo pagination = 3;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional double price = 4;
+  optional string category = 5;
+  optional bool is_active = 6;
+}
+
+message UpdateProductResponse {
+  string message = 1;
+}
+
+message DeleteProductRequest {
+  string id = 1;
+}
+
+// Order messages
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_PENDING = 1;
+  ORDER_STATUS_CONFIRMED = 2;
+  ORDER_STATUS_SHIPPED = 3;
+  ORDER_STATUS_DELIVERED = 4;
+  ORDER_STATUS_CANCELLED = 5;
+}
+
+message Order {
+  string id = 1;
+  string user_id = 2;
+  OrderStatus status = 3;
+  double total_price = 4;
+  repeated OrderItem items = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message OrderItem {
+  string id = 1;
+  string order_id = 2;
+  string product_id = 3;
+  int32 quantity = 4;
+  double price = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message CreateOrderRequest {
+  repeated CreateOrderItemRequest items = 1;
+}
+
+message CreateOrderItemRequest {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+message CreateOrderResponse {
+  string id = 1;
+  string message = 2;
+}
+
+message GetOrderRequest {
+  string id = 1;
+}
+
+message GetOrderResponse {
+  Order order = 1;
+}
+
+message GetUserOrdersRequest {
+  string user_id = 1;
+  int32 offset = 2;
+  int32 limit = 3;
+}
+
+message ListOrdersRequest {
+  int32 offset = 1;
+  int32 limit = 2;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  int32 total = 2;
+  PaginationInfo pagination = 3;
+}
+
+message UpdateOrderStatusRequest {
+  string id = 1;
+  OrderStatus status = 2;
+}
+
+message UpdateOrderStatusResponse {
+  string message = 1;
+}
+
+message CancelOrderRequest {
+  string id = 1;
+}
+
+// Common messages
+message PaginationInfo {
+  int32 offset = 1;
+  int32 limit = 2;
+  int32 total = 3;
+}
