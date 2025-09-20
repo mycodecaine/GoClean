@@ -159,6 +159,7 @@ jobs:
       with:
         name: binaries
         path: bin/
+        retention-days: 2
 
   build-cross-platform:
     name: Cross-platform Build
@@ -225,6 +226,7 @@ jobs:
       with:
         name: goclean-${{ matrix.goos }}-${{ matrix.goarch }}
         path: dist/
+        retention-days: 2
 
   docker-build:
     name: Docker Build
