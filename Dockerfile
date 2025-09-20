@@ -19,7 +19,10 @@ COPY . .
 # Install swag and generate swagger docs
 RUN go install github.com/swaggo/swag/cmd/swag@v1.8.12
 RUN swag init -g cmd/http/main.go -o api/swagger
-RUN sed -i '/LeftDelim:/d' api/swagger/docs.go && sed -i '/RightDelim:/d' api/swagger/docs.go
+RUN if [ -f "api/swagger/docs.go" ]; then \
+        grep -v 'LeftDelim:' api/swagger/docs.go | grep -v 'RightDelim:' > api/swagger/docs.go.tmp && \
+        mv api/swagger/docs.go.tmp api/swagger/docs.go; \
+    fi
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o bin/goclean-http cmd/http/main.go

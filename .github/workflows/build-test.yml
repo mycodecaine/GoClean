@@ -73,8 +73,10 @@ jobs:
     - name: Fix swag compatibility
       run: |
         # Remove LeftDelim and RightDelim fields that are incompatible with some swag versions
-        sed -i '/LeftDelim:/d' api/swagger/docs.go
-        sed -i '/RightDelim:/d' api/swagger/docs.go
+        if [ -f "api/swagger/docs.go" ]; then
+          grep -v 'LeftDelim:' api/swagger/docs.go | grep -v 'RightDelim:' > api/swagger/docs.go.tmp
+          mv api/swagger/docs.go.tmp api/swagger/docs.go
+        fi
 
     - name: Run go vet
       run: go vet ./...
@@ -145,8 +147,10 @@ jobs:
     - name: Fix swag compatibility
       run: |
         # Remove LeftDelim and RightDelim fields that are incompatible with some swag versions
-        sed -i '/LeftDelim:/d' api/swagger/docs.go
-        sed -i '/RightDelim:/d' api/swagger/docs.go
+        if [ -f "api/swagger/docs.go" ]; then
+          grep -v 'LeftDelim:' api/swagger/docs.go | grep -v 'RightDelim:' > api/swagger/docs.go.tmp
+          mv api/swagger/docs.go.tmp api/swagger/docs.go
+        fi
 
     - name: Build HTTP server
       run: go build -o bin/goclean ./cmd/http
@@ -196,8 +200,10 @@ jobs:
     - name: Fix swag compatibility
       run: |
         # Remove LeftDelim and RightDelim fields that are incompatible with some swag versions
-        sed -i '/LeftDelim:/d' api/swagger/docs.go
-        sed -i '/RightDelim:/d' api/swagger/docs.go
+        if [ -f "api/swagger/docs.go" ]; then
+          grep -v 'LeftDelim:' api/swagger/docs.go | grep -v 'RightDelim:' > api/swagger/docs.go.tmp
+          mv api/swagger/docs.go.tmp api/swagger/docs.go
+        fi
 
     - name: Build binaries
       env:
