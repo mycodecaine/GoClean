@@ -136,6 +136,18 @@ jobs:
     - name: Install dependencies
       run: go mod download
 
+    - name: Install swag
+      run: go install github.com/swaggo/swag/cmd/swag@v1.8.12
+
+    - name: Generate Swagger docs
+      run: swag init -g cmd/http/main.go -o api/swagger
+
+    - name: Fix swag compatibility
+      run: |
+        # Remove LeftDelim and RightDelim fields that are incompatible with some swag versions
+        sed -i '/LeftDelim:/d' api/swagger/docs.go
+        sed -i '/RightDelim:/d' api/swagger/docs.go
+
     - name: Build HTTP server
       run: go build -o bin/goclean ./cmd/http
 
@@ -173,6 +185,18 @@ jobs:
 
     - name: Install dependencies
       run: go mod download
+
+    - name: Install swag
+      run: go install github.com/swaggo/swag/cmd/swag@v1.8.12
+
+    - name: Generate Swagger docs
+      run: swag init -g cmd/http/main.go -o api/swagger
+
+    - name: Fix swag compatibility
+      run: |
+        # Remove LeftDelim and RightDelim fields that are incompatible with some swag versions
+        sed -i '/LeftDelim:/d' api/swagger/docs.go
+        sed -i '/RightDelim:/d' api/swagger/docs.go
 
     - name: Build binaries
       env:
