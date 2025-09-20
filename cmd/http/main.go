@@ -19,6 +19,10 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "goclean/api/swagger" // Import generated docs
+
+	"github.com/joho/godotenv"
 )
 
 // @title GoClean API
@@ -42,6 +46,11 @@ import (
 // @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Println("Warning: .env file not found or could not be loaded")
+	}
+
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {

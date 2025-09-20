@@ -37,10 +37,10 @@ func NewProductHandler(
 // @Accept json
 // @Produce json
 // @Param product body dto.CreateProductRequest true "Product data"
-// @Success 201 {object} dto.APIResponse[interface{}]
-// @Failure 400 {object} dto.APIResponse[interface{}]
-// @Failure 401 {object} dto.APIResponse[interface{}]
-// @Failure 500 {object} dto.APIResponse[interface{}]
+// @Success 201 {object} dto.ProductAPIResponse
+// @Failure 400 {object} dto.ErrorAPIResponse
+// @Failure 401 {object} dto.ErrorAPIResponse
+// @Failure 500 {object} dto.ErrorAPIResponse
 // @Router /api/v1/products [post]
 // @Security BearerAuth
 func (h *ProductHandler) CreateProduct(c echo.Context) error {
@@ -99,9 +99,9 @@ func (h *ProductHandler) CreateProduct(c echo.Context) error {
 // @Tags products
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.APIResponse[dto.ProductDTO]
-// @Failure 400 {object} dto.APIResponse[interface{}]
-// @Failure 404 {object} dto.APIResponse[interface{}]
+// @Success 200 {object} dto.ProductAPIResponse
+// @Failure 400 {object} dto.ErrorAPIResponse
+// @Failure 404 {object} dto.ErrorAPIResponse
 // @Router /api/v1/products/{id} [get]
 func (h *ProductHandler) GetProduct(c echo.Context) error {
 	idStr := c.Param("id")
@@ -151,8 +151,8 @@ func (h *ProductHandler) GetProduct(c echo.Context) error {
 // @Param limit query int false "Limit" default(10)
 // @Param category query string false "Category filter"
 // @Param search query string false "Search query"
-// @Success 200 {object} dto.PaginatedResponse[[]dto.ProductDTO]
-// @Failure 400 {object} dto.APIResponse[interface{}]
+// @Success 200 {object} dto.ProductsListResponse
+// @Failure 400 {object} dto.ErrorAPIResponse
 // @Router /api/v1/products [get]
 func (h *ProductHandler) ListProducts(c echo.Context) error {
 	offset, _ := strconv.Atoi(c.QueryParam("offset"))

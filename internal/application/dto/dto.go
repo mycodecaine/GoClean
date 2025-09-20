@@ -149,3 +149,53 @@ type PaginationInfo struct {
 	Limit  int `json:"limit"`
 	Total  int `json:"total"`
 }
+
+// Swagger-compatible response types (non-generic versions for documentation)
+
+// UserAPIResponse represents API response for user operations
+type UserAPIResponse struct {
+	Success bool     `json:"success"`
+	Data    *UserDTO `json:"data,omitempty"`
+	Error   string   `json:"error,omitempty"`
+	Message string   `json:"message,omitempty"`
+}
+
+// ProductAPIResponse represents API response for product operations
+type ProductAPIResponse struct {
+	Success bool        `json:"success"`
+	Data    *ProductDTO `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
+	Message string      `json:"message,omitempty"`
+}
+
+// OrderAPIResponse represents API response for order operations
+type OrderAPIResponse struct {
+	Success bool      `json:"success"`
+	Data    *OrderDTO `json:"data,omitempty"`
+	Error   string    `json:"error,omitempty"`
+	Message string    `json:"message,omitempty"`
+}
+
+// ErrorAPIResponse represents API response for errors
+type ErrorAPIResponse struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+// UsersListResponse represents API response for user list operations
+type UsersListResponse struct {
+	Success bool      `json:"success"`
+	Data    []UserDTO `json:"data,omitempty"`
+	Error   string    `json:"error,omitempty"`
+	Message string    `json:"message,omitempty"`
+}
+
+// ProductsListResponse represents paginated API response for product list operations
+type ProductsListResponse struct {
+	Success    bool           `json:"success"`
+	Data       []ProductDTO   `json:"data,omitempty"`
+	Error      string         `json:"error,omitempty"`
+	Message    string         `json:"message,omitempty"`
+	Pagination PaginationInfo `json:"pagination"`
+}

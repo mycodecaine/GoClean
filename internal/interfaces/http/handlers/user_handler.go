@@ -37,9 +37,9 @@ func NewUserHandler(
 // @Accept json
 // @Produce json
 // @Param user body dto.CreateUserRequest true "User data"
-// @Success 201 {object} dto.APIResponse[dto.UserDTO]
-// @Failure 400 {object} dto.APIResponse[interface{}]
-// @Failure 500 {object} dto.APIResponse[interface{}]
+// @Success 201 {object} dto.UserAPIResponse
+// @Failure 400 {object} dto.ErrorAPIResponse
+// @Failure 500 {object} dto.ErrorAPIResponse
 // @Router /api/v1/users [post]
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	var req dto.CreateUserRequest
@@ -86,9 +86,9 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 // @Tags users
 // @Produce json
 // @Param id path string true "User ID"
-// @Success 200 {object} dto.APIResponse[dto.UserDTO]
-// @Failure 400 {object} dto.APIResponse[interface{}]
-// @Failure 404 {object} dto.APIResponse[interface{}]
+// @Success 200 {object} dto.UserAPIResponse
+// @Failure 400 {object} dto.ErrorAPIResponse
+// @Failure 404 {object} dto.ErrorAPIResponse
 // @Router /api/v1/users/{id} [get]
 // @Security BearerAuth
 func (h *UserHandler) GetUser(c echo.Context) error {
@@ -147,8 +147,8 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 // @Produce json
 // @Param offset query int false "Offset" default(0)
 // @Param limit query int false "Limit" default(10)
-// @Success 200 {object} dto.PaginatedResponse[[]dto.UserDTO]
-// @Failure 400 {object} dto.APIResponse[interface{}]
+// @Success 200 {object} dto.UsersListResponse
+// @Failure 400 {object} dto.ErrorAPIResponse
 // @Router /api/v1/users [get]
 // @Security BearerAuth
 func (h *UserHandler) ListUsers(c echo.Context) error {
@@ -216,9 +216,9 @@ func (h *UserHandler) ListUsers(c echo.Context) error {
 // @Description Get current authenticated user information
 // @Tags users
 // @Produce json
-// @Success 200 {object} dto.APIResponse[dto.UserDTO]
-// @Failure 401 {object} dto.APIResponse[interface{}]
-// @Failure 404 {object} dto.APIResponse[interface{}]
+// @Success 200 {object} dto.UserAPIResponse
+// @Failure 401 {object} dto.ErrorAPIResponse
+// @Failure 404 {object} dto.ErrorAPIResponse
 // @Router /api/v1/users/me [get]
 // @Security BearerAuth
 func (h *UserHandler) GetCurrentUser(c echo.Context) error {

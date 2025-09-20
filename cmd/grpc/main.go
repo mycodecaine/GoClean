@@ -10,11 +10,17 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Println("Warning: .env file not found or could not be loaded")
+	}
+
 	log.Println("Starting gRPC server...")
 
 	// Create gRPC server
