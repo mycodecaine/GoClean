@@ -64,6 +64,12 @@ jobs:
     - name: Verify dependencies
       run: go mod verify
 
+    - name: Install swag
+      run: go install github.com/swaggo/swag/cmd/swag@latest
+
+    - name: Generate Swagger docs
+      run: swag init -g cmd/http/main.go -o api/swagger
+
     - name: Run go vet
       run: go vet ./...
 

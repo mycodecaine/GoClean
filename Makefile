@@ -32,7 +32,7 @@ proto: ## Generate protobuf code
 		--go-grpc_out=api/proto/v1 --go-grpc_opt=paths=source_relative \
 		$(PROTO_FILES)
 
-build-http: deps ## Build HTTP server binary
+build-http: deps swagger ## Build HTTP server binary
 	@echo "Building HTTP server..."
 	@mkdir -p $(GOBIN)
 	@CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) go build -ldflags="-w -s" -o $(GOBIN)/$(BINARY_NAME)-http cmd/http/main.go
